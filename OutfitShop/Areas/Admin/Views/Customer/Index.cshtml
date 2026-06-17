@@ -1,0 +1,64 @@
+﻿@model List<OutfitShop.Areas.Admin.Controllers.CustomerController.CustomerMock>
+@{
+    ViewData["Title"] = "Quản lý khách hàng";
+    Layout = "~/Areas/Admin/Views/Shared/_Layout.cshtml";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold m-0 text-dark"><i class="fa-solid fa-users me-2"></i>Quản Lý Khách Hàng</h2>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+        <table class="table table-hover table-striped m-0 align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th class="ps-4">Tài Khoản ID</th>
+                    <th>Họ và Tên</th>
+                    <th>Email Hệ Thống</th>
+                    <th>Số Điện thoại</th>
+                    <th class="text-center">Trạng Thái</th>
+                    <th class="text-center pe-4" style="width: 180px;">Hành Động</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model != null && Model.Any())
+                {
+                    foreach (var item in Model)
+                    {
+                        <tr>
+                            <td class="ps-4 text-muted text-truncate" style="max-width: 120px;" title="@item.Id">@item.Id</td>
+                            <td class="fw-semibold text-dark">@item.FullName</td>
+                            <td><i class="fa-solid fa-envelope me-1 text-muted small"></i>@item.Email</td>
+                            <td><i class="fa-solid fa-phone me-1 text-muted small"></i>@item.PhoneNumber</td>
+                            <td class="text-center">
+                                @if (item.Status == "Hoạt động")
+                                {
+                                    <span class="badge bg-success-subtle text-success px-3 py-2">Hoạt động</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger-subtle text-danger px-3 py-2">Bị khóa</span>
+                                }
+                            </td>
+                            <td class="text-center pe-4">
+                                <a href="/Admin/Customer/Details/@item.Id" class="btn btn-sm btn-outline-primary me-1" title="Hồ sơ">
+                                    <i class="fa-solid fa-eye"></i>
+                                </a>
+                                <a href="/Admin/Customer/ToggleStatus/@item.Id" class="btn btn-sm btn-outline-danger" title="Khóa/Mở khóa tài khoản" onclick="return confirm('Bạn có chắc chắn muốn thay đổi trạng thái khóa của tài khoản này?')">
+                                    <i class="fa-solid fa-user-lock"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="6" class="text-center py-4 text-muted">Chưa có khách hàng đăng ký thành viên.</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

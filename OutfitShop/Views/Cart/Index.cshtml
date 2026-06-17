@@ -1,0 +1,185 @@
+﻿@model IEnumerable<OutfitShop.Models.CartItem>
+@{
+    ViewData["Title"] = SharedLocalizer["Cart"];
+    decimal grandTotal = Model?.Sum(x => x.TotalPrice) ?? 0;
+}
+
+<div class="container py-5" style="min-height: 60vh;">
+    <h2 class="fw-bold mb-4 text-uppercase" style="letter-spacing: -0.5px;">
+        <i class="fa-solid fa-bag-shopping me-2"></i>@SharedLocalizer["Cart"]
+    </h2>
+
+    @if (Model == null || !Model.Any())
+    {
+        <div class="text-center bg-white border p-5">
+            <i class="fa-solid fa-cart-arrow-down text-muted mb-3" style="font-size: 3rem;"></i>
+            <h4 class="text-muted fw-semibold">@SharedLocalizer["CartEmptyTitle"]</h4>
+            <p class="small text-muted mb-4">@SharedLocalizer["CartEmptySubtitle"]</p>
+            <a href="/Product/Index" class="btn btn-dark px-4 py-2 rounded-0 fw-semibold text-uppercase" style="font-size: 13px;">
+                @SharedLocalizer["ContinueShopping"]
+            </a>
+        </div>
+    }
+    else
+    {
+        <div class="row g-4">
+            <div class="col-lg-8">
+                <div class="table-responsive bg-white border p-3">
+                    <table class="table align-middle m-0 table-borderless">
+                        <thead class="border-bottom text-muted" style="font-size: 13px;">
+                            <tr>
+                                <th class="ps-0 pb-3">@SharedLocalizer["Product"]</th>
+                                <th class="pb-3">@SharedLocalizer["Price"]</th>
+                                <th class="pb-3" style="width: 100px;">@SharedLocalizer["Quantity"]</th>
+                                <th class="pb-3">@SharedLocalizer["Subtotal"]</th>
+                                <th class="text-center pb-3"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr id="row-@item.ProductId" class="border-bottom">
+                                    <td class="ps-0 py-3">
+                                        <div class="d-flex align-items-center">
+                                            <img src="@(!string.IsNullOrEmpty(item.ImageUrl) ? item.ImageUrl : "https://via.placeholder.com/150")"
+                                                 alt="@item.ProductName" style="width:70px; height:70px; object-fit:cover;"
+                                                 class="me-3 rounded-0 border" onerror="this.src='https://via.placeholder.com/150';">
+                                            <div>
+                                                <span class="fw-semibold text-dark d-block" style="font-size: 14px;">@item.ProductName</span>
+                                                <small class="text-muted">ID: #@item.ProductId</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="py-3 text-dark" style="font-size: 14px;">@item.Price.ToString("N0") đ</td>
+                                    <td class="py-3">
+                                        <input type="number" min="1" value="@item.Quantity"
+                                               class="form-control text-center qty-input rounded-0 form-control-sm shadow-none"
+                                               data-id="@item.ProductId" data-price="@item.Price" style="font-size: 13px;">
+                                    </td>
+                                    <td class="item-total fw-bold text-dark py-3" id="total-@item.ProductId" style="font-size: 14px;">
+                                        @item.TotalPrice.ToString("N0") đ
+                                    </td>
+                                    <td class="text-center py-3">
+                                        <button class="btn btn-sm text-muted hover-danger btn-remove border-0 bg-transparent shadow-none"
+                                                data-id="@item.ProductId" title="@SharedLocalizer["Remove"]">
+                                            <i class="fa-solid fa-trash-can"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="mt-4">
+                    <a href="/Product/Index" class="text-dark text-decoration-none fw-semibold small text-uppercase" style="letter-spacing: 0.5px;">
+                        <i class="fa-solid fa-arrow-left me-2"></i>@SharedLocalizer["ContinueShopping"]
+                    </a>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="border p-4 bg-white">
+                    <h5 class="fw-bold mb-3 text-uppercase" style="letter-spacing: 0.5px; font-size: 15px;">@SharedLocalizer["OrderSummary"]</h5>
+                    <hr />
+
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <span class="text-muted small">@SharedLocalizer["TotalPayment"]:</span>
+                        <span class="fw-bold text-danger fs-4">
+                            <span id="grand-total">@grandTotal.ToString("N0")</span> đ
+                        </span>
+                    </div>
+
+                    <div class="d-flex flex-column gap-2">
+                        <a href="/Cart/Checkout" class="btn btn-dark w-100 py-25 rounded-0 fw-semibold text-uppercase" style="font-size: 13px; letter-spacing: 0.5px;">
+                            @SharedLocalizer["ProceedToCheckout"] <i class="fa-solid fa-arrow-right ms-2"></i>
+                        </a>
+
+                        <form asp-controller="Payment" asp-action="CreateCheckoutSession" method="POST">
+                            <button type="submit" class="btn btn-outline-dark w-100 py-25 rounded-0 fw-semibold text-uppercase d-flex align-items-center justify-content-center gap-2" style="font-size: 13px; letter-spacing: 0.5px;">
+                                <i class="fa-brands fa-cc-visa fs-5"></i> @SharedLocalizer["VisaPay"]
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+
+            // Xử lý sự kiện khi thay đổi số lượng
+            $('.qty-input').on('change', function () {
+                let input = $(this);
+                let productId = input.data('id');
+                let newQuantity = parseInt(input.val());
+                let price = parseFloat(input.data('price'));
+
+                if (newQuantity < 1) {
+                    input.val(1);
+                    newQuantity = 1;
+                }
+
+                $.ajax({
+                    url: '/Cart/UpdateQuantity',
+                    type: 'POST',
+                    data: { id: productId, quantity: newQuantity },
+                    success: function (res) {
+                        if (res.success) {
+                            let newTotal = price * newQuantity;
+                            $('#total-' + productId).text(new Intl.NumberFormat('vi-VN').format(newTotal) + ' đ');
+                            updateGrandTotal();
+                        }
+                    },
+                    error: function () {
+                        alert("Có lỗi xảy ra khi cập nhật số lượng!");
+                    }
+                });
+            });
+
+            // Xử lý nút xóa sản phẩm khỏi giỏ hàng
+            $('.btn-remove').on('click', function () {
+                let productId = $(this).data('id');
+                if(confirm('Bạn có chắc chắn muốn xóa sản phẩm này khỏi giỏ hàng?')) {
+
+                    $.ajax({
+                        url: '/Cart/RemoveFromCart',
+                        type: 'POST',
+                        data: { id: productId },
+                        success: function (res) {
+                            if (res.success) {
+                                $('#row-' + productId).fadeOut(300, function() {
+                                    $(this).remove();
+                                    updateGrandTotal();
+
+                                    if ($('.qty-input').length === 0) {
+                                        location.reload();
+                                    }
+                                });
+                            } else {
+                                alert(res.message || "Lỗi: Không tìm thấy sản phẩm trên Server.");
+                            }
+                        },
+                        error: function() {
+                            alert("Không thể kết nối đến máy chủ.");
+                        }
+                    });
+                }
+            });
+
+            // Hàm tính toán và cập nhật lại tổng số tiền hiển thị trên View
+            function updateGrandTotal() {
+                let grandTotal = 0;
+                $('.qty-input').each(function () {
+                    let qty = parseInt($(this).val());
+                    let price = parseFloat($(this).data('price'));
+                    grandTotal += (qty * price);
+                });
+                $('#grand-total').text(new Intl.NumberFormat('vi-VN').format(grandTotal));
+            }
+        });
+    </script>
+}

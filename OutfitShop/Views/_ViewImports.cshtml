@@ -1,0 +1,14 @@
+﻿@using OutfitShop
+@using OutfitShop.Models
+@using Microsoft.AspNetCore.Identity
+
+@* --- [THÊM MỚI] KHAI BÁO SỬ DỤNG ĐA NGÔN NGỮ TRÊN VIEW --- *@
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<OutfitShop.Resources.SharedResource> SharedLocalizer
+@* ----------------------------------------------------- *@
+
+@* Kích hoạt toàn bộ Tag Helpers mặc định của ASP.NET Core *@
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+@* Kích hoạt Tag Helpers cho Identity (Tùy chọn thêm để an toàn) *@
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers.Identity

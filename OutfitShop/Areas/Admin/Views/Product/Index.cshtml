@@ -1,0 +1,73 @@
+﻿@model List<OutfitShop.Areas.Admin.Controllers.ProductController.ProductMock>
+@{
+    ViewData["Title"] = "Quản lý sản phẩm";
+    Layout = "~/Areas/Admin/Views/Shared/_Layout.cshtml";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold m-0 text-dark"><i class="fa-solid fa-shirt me-2"></i>Quản Lý Sản Phẩm</h2>
+    <a href="/Admin/Product/Create" class="btn btn-primary fw-semibold">
+        <i class="fa-solid fa-plus me-1"></i> Thêm Sản Phẩm Mới
+    </a>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+        <table class="table table-hover table-striped m-0 align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th class="ps-4">Mã</th>
+                    <th>Hình Ảnh</th>
+                    <th>Tên Sản Phẩm</th>
+                    <th>Danh Mục</th>
+                    <th>Giá Bán</th>
+                    <th class="text-center">Trạng Thái</th>
+                    <th class="text-center pe-4" style="width: 180px;">Hành Động</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model != null && Model.Any())
+                {
+                    foreach (var item in Model)
+                    {
+                        <tr>
+                            <td class="ps-4 fw-bold text-muted">#@item.Id</td>
+                            
+                            <td>
+                                <img src="@item.ImageUrl" style="width: 80px; height: 80px; object-fit: cover;" class="rounded border shadow-sm bg-white" alt="Ảnh SP" />
+                            </td>
+
+                            <td class="fw-semibold text-dark">@item.Name</td>
+                            <td><span class="badge bg-light text-dark border">@item.Category</span></td>
+                            <td class="fw-bold text-danger">@item.Price.ToString("N0") đ</td>
+                            <td class="text-center">
+                                @if (item.IsActive)
+                                {
+                                    <span class="badge bg-success-subtle text-success px-3 py-2">Kinh doanh</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger-subtle text-danger px-3 py-2">Tạm ẩn</span>
+                                }
+                            </td>
+                            <td class="text-center pe-4">
+                                <a href="/Admin/Product/Edit/@item.Id" class="btn btn-sm btn-outline-warning me-1" title="Sửa">
+                                    <i class="fa-solid fa-pen"></i>
+                                </a>
+                                <a href="/Admin/Product/Delete/@item.Id" class="btn btn-sm btn-outline-danger" title="Xóa" onclick="return confirm('Bạn chắc chắn muốn xóa sản phẩm này?')">
+                                    <i class="fa-solid fa-trash"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="7" class="text-center py-4 text-muted">Chưa có sản phẩm nào trong kho hàng.</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

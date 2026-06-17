@@ -1,0 +1,63 @@
+﻿@model IEnumerable<OutfitShop.Models.Order>
+@{
+    ViewData["Title"] = "Lịch sử mua hàng";
+}
+
+<div class="container py-5" style="min-height: 60vh;">
+    <h2 class="fw-bold mb-4 text-uppercase"><i class="fa-solid fa-clock-rotate-left me-2"></i>Lịch sử mua hàng</h2>
+
+    @if (Model == null || !Model.Any())
+    {
+        <div class="text-center bg-white shadow-sm rounded p-5">
+            <i class="fa-solid fa-box-open text-muted mb-3" style="font-size: 4rem;"></i>
+            <h4 class="text-muted">Bạn chưa có đơn hàng nào</h4>
+            <p class="small text-muted mb-4">Hãy tiếp tục khám phá và mua sắm các sản phẩm cực chất nhé!</p>
+            <a href="/Product/Index" class="btn btn-dark px-4 py-2 fw-bold">ĐẾN CỬA HÀNG</a>
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive shadow-sm bg-white rounded">
+            <table class="table table-hover align-middle m-0">
+                <thead class="table-dark">
+                    <tr>
+                        <th class="ps-4">Mã ĐH</th>
+                        <th>Ngày đặt hàng</th>
+                        <th>Tổng tiền</th>
+                        <th>Trạng thái</th>
+                        <th class="text-center">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var order in Model)
+                    {
+                        <tr>
+                            <td class="ps-4 fw-bold">#@order.Id</td>
+                            <td>@order.OrderDate.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td class="fw-bold text-danger">@order.TotalAmount.ToString("N0") đ</td>
+                            <td>
+                                @if (order.Status == "Đang xử lý")
+                                {
+                                    <span class="badge bg-warning text-dark"><i class="fa-solid fa-spinner fa-spin me-1"></i> @order.Status</span>
+                                }
+                                else if (order.Status == "Đã giao hàng")
+                                {
+                                    <span class="badge bg-success"><i class="fa-solid fa-check me-1"></i> @order.Status</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">@order.Status</span>
+                                }
+                            </td>
+                            <td class="text-center">
+                                <a href="/Order/Details/@order.Id" class="btn btn-sm btn-outline-dark fw-bold">
+                                    <i class="fa-solid fa-eye me-1"></i> Chi tiết
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

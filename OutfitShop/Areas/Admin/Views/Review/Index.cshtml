@@ -1,0 +1,59 @@
+﻿@model List<OutfitShop.Areas.Admin.Controllers.ReviewController.ReviewMock>
+@{
+    ViewData["Title"] = "Quản lý đánh giá";
+    Layout = "~/Areas/Admin/Views/Shared/_Layout.cshtml";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold m-0 text-dark"><i class="fa-solid fa-comments me-2"></i>Quản Lý Đánh Giá</h2>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+        <table class="table table-hover table-striped m-0 align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th class="ps-4">Khách Hàng</th>
+                    <th>Sản Phẩm Đánh Giá</th>
+                    <th>Số Sao</th>
+                    <th>Nội Dung Bình Luận</th>
+                    <th class="text-center">Trạng Thái</th>
+                    <th class="text-center pe-4" style="width: 120px;">Hành Động</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model != null && Model.Any())
+                {
+                    foreach (var item in Model)
+                    {
+                        <tr>
+                            <td class="ps-4 fw-semibold text-dark">@item.CustomerName</td>
+                            <td class="fw-semibold text-primary">@item.ProductName</td>
+                            <td class="text-warning">
+                                @for (int i = 0; i < item.Rating; i++)
+                                {
+                                    <i class="fa-solid fa-star small"></i>
+                                }
+                            </td>
+                            <td class="text-truncate" style="max-width: 300px;" title="@item.Comment">@item.Comment</td>
+                            <td class="text-center">
+                                <span class="badge bg-success-subtle text-success px-3 py-2"><i class="fa-solid fa-circle-check me-1"></i>Đã hiển thị</span>
+                            </td>
+                            <td class="text-center pe-4">
+                                <a href="/Admin/Review/Delete/@item.Id" class="btn btn-sm btn-outline-danger" title="Xóa bình luận vi phạm" onclick="return confirm('Bạn có chắc chắn muốn xóa vĩnh viễn bình luận vi phạm chính sách này?')">
+                                    <i class="fa-solid fa-trash"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="6" class="text-center py-4 text-muted">Chưa ghi nhận đánh giá nào từ khách hàng.</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

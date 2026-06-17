@@ -1,0 +1,38 @@
+@{
+    ViewData["Title"] = "Đăng Ký Thành Viên";
+}
+
+<div class="row justify-content-center align-items-center" style="min-height: 65vh;">
+    <div class="col-md-5">
+        <div class="card border-0 shadow rounded-3 p-4 bg-white">
+            <div class="text-center mb-4">
+                <h4 class="fw-bold m-0 text-uppercase">Đăng Ký Tài Khoản</h4>
+                <small class="text-muted">Trở thành thành viên để nhận nhiều ưu đãi thời trang</small>
+            </div>
+
+            <div asp-validation-summary="All" class="text-danger small mb-3 text-center fw-semibold"></div>
+
+            <form asp-controller="Account" asp-action="Register" method="post">
+                <div class="mb-3">
+                    <label class="form-label small fw-bold">Họ và Tên của bạn</label>
+                    <input type="text" class="form-control bg-light" name="FullName" required placeholder="Nguyễn Văn A">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label small fw-bold">Địa chỉ Email</label>
+                    <input type="email" class="form-control bg-light" name="Email" required placeholder="example@gmail.com">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label small fw-bold">Mật khẩu bảo mật</label>
+                    <input type="password" class="form-control bg-light" name="Password" required placeholder="Tối thiểu 6 ký tự">
+                </div>
+                <div class="mb-4">
+                    <label class="form-label small fw-bold">Xác nhận lại mật khẩu</label>
+                    <input type="password" class="form-control bg-light" name="ConfirmPassword" required placeholder="Nhập lại mật khẩu giống trên">
+                </div>
+
+                <button type="submit" class="btn btn-dark w-100 py-2 fw-bold mb-3">TẠO TÀI KHOẢN</button>
+                <p class="text-center small m-0 text-muted">Đã có tài khoản? <a href="/Account/Login" class="text-primary text-decoration-none fw-bold">Đăng nhập</a></p>
+            </form>
+        </div>
+    </div>
+</div>

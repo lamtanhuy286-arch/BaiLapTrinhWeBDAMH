@@ -1,0 +1,69 @@
+﻿@model List<OutfitShop.Areas.Admin.Controllers.OrderController.OrderMock>
+@{
+    ViewData["Title"] = "Quản lý đơn hàng";
+    Layout = "~/Areas/Admin/Views/Shared/_Layout.cshtml";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold m-0 text-dark"><i class="fa-solid fa-cart-shopping me-2"></i>Quản Lý Đơn Hàng</h2>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+        <table class="table table-hover table-striped m-0 align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th class="ps-4">Mã ĐH</th>
+                    <th>Khách Hàng</th>
+                    <th>Ngày Đặt Hàng</th>
+                    <th>Tổng Tiền</th>
+                    <th class="text-center">Trạng Thái</th>
+                    <th class="text-center pe-4" style="width: 150px;">Thao Tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model != null && Model.Any())
+                {
+                    foreach (var order in Model)
+                    {
+                        <tr>
+                            <td class="ps-4 fw-bold text-muted">#@order.OrderId</td>
+                            <td class="fw-semibold text-dark">@order.CustomerName</td>
+                            <td>@order.OrderDate</td>
+                            <td class="fw-bold text-danger">@order.TotalAmount.ToString("N0") đ</td>
+                            <td class="text-center">
+                                @if (order.Status == "Chờ xác nhận" || order.Status == "Đang xử lý")
+                                {
+                                    <span class="badge bg-warning-subtle text-warning px-3 py-2">@order.Status</span>
+                                }
+                                else if (order.Status == "Đang giao")
+                                {
+                                    <span class="badge bg-info-subtle text-info px-3 py-2">@order.Status</span>
+                                }
+                                else if (order.Status == "Đã hủy")
+                                {
+                                    <span class="badge bg-danger-subtle text-danger px-3 py-2">@order.Status</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-success-subtle text-success px-3 py-2">@order.Status</span>
+                                }
+                            </td>
+                            <td class="text-center pe-4">
+                                <a href="/Admin/Order/Details/@order.OrderId" class="btn btn-sm btn-outline-primary fw-bold">
+                                    <i class="fa-solid fa-file-magnifying-glass me-1"></i> Chi tiết
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="6" class="text-center py-4 text-muted">Hệ thống chưa ghi nhận đơn hàng nào.</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

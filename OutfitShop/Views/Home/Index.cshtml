@@ -1,0 +1,171 @@
+﻿@model IEnumerable<OutfitShop.Models.Product>
+@{
+    ViewData["Title"] = "Trang Chủ";
+}
+
+<style>
+    /* CSS Tùy chỉnh cho phong cách Minimalist */
+    body {
+        font-family: 'Inter', 'Segoe UI', sans-serif;
+        color: #111;
+    }
+    
+    .btn-dark-custom {
+        background-color: #000;
+        color: #fff;
+        border: none;
+        border-radius: 0;
+        padding: 14px 36px;
+        font-size: 14px;
+        font-weight: 600;
+        transition: background-color 0.3s ease;
+    }
+
+        .btn-dark-custom:hover {
+            background-color: #333;
+            color: #fff;
+        }
+
+    .step-card {
+        background-color: #fff;
+        border: 1px solid #eaeaea;
+        padding: 40px 30px;
+        height: 100%;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+        .step-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.03);
+        }
+
+    .product-img-wrapper {
+        position: relative;
+        overflow: hidden;
+        aspect-ratio: 3/4; /* Tỷ lệ khung ảnh dọc chuẩn thời trang */
+        background-color: #f8f9fa;
+        margin-bottom: 15px;
+    }
+    
+    .product-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+
+    .product-card:hover .product-img {
+        transform: scale(1.05); /* Hiệu ứng zoom nhẹ ảnh khi di chuột */
+    }
+
+    .section-title {
+        font-weight: 700;
+        letter-spacing: -0.5px;
+    }
+    
+    .text-brand {
+        font-size: 10px;
+        letter-spacing: 1px;
+        color: #888;
+    }
+</style>
+
+<div class="container my-5 py-4">
+    <div class="row align-items-center">
+        <div class="col-lg-5 pe-lg-5 mb-5 mb-lg-0">
+            <h1 class="display-4 section-title mb-4">Nâng tầm phong cách cá nhân với Hệ Thống Phối Đồ</h1>
+            <p class="text-muted mb-5 fs-5" style="line-height: 1.6;">
+                Khám phá tủ đồ vô tận và tạo ra những bộ trang phục hoàn hảo chỉ với vài cú nhấp chuột. Hệ thống kết hợp tính toán chi phí thông minh và gu thẩm mỹ thời trang hiện đại.
+            </p>
+            <a href="/PhieuPhoiDo" class="btn btn-dark-custom text-decoration-none">Thử đồ ngay</a>
+        </div>
+        <div class="col-lg-7">
+            <img src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=2070&auto=format&fit=crop"
+                 class="img-fluid w-100" style="object-fit: cover; height: 650px; background-color: #f4f4f4;" alt="Fashion Outfit">
+        </div>
+    </div>
+</div>
+
+<div class="bg-light py-5 mt-5">
+    <div class="container py-5">
+        <div class="text-center mb-5 pb-3">
+            <h2 class="section-title h3 mb-3">Cách thức hoạt động</h2>
+            <p class="text-muted">Quy trình tinh giản, kết quả hoàn mỹ.</p>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="step-card text-center text-md-start">
+                    <div class="mb-4 text-muted">
+                        <i class="fa-solid fa-shirt fs-4 bg-light p-3 rounded-circle"></i>
+                    </div>
+                    <h5 class="fw-bold mb-3">Chọn đồ</h5>
+                    <p class="text-muted small mb-0 lh-lg">Duyệt qua catalog thời trang cao cấp và chọn những món đồ bạn yêu thích để đưa vào phòng thử.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="step-card text-center text-md-start">
+                    <div class="mb-4 text-muted">
+                        <i class="fa-solid fa-wand-magic-sparkles fs-4 bg-light p-3 rounded-circle"></i>
+                    </div>
+                    <h5 class="fw-bold mb-3">Phối hợp</h5>
+                    <p class="text-muted small mb-0 lh-lg">Hệ thống của chúng tôi sẽ phân tích và gợi ý cách kết hợp màu sắc, chất liệu và phom dáng tối ưu nhất.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="step-card text-center text-md-start">
+                    <div class="mb-4 text-muted">
+                        <i class="fa-solid fa-credit-card fs-4 bg-light p-3 rounded-circle"></i>
+                    </div>
+                    <h5 class="fw-bold mb-3">Thanh toán</h5>
+                    <p class="text-muted small mb-0 lh-lg">Thanh toán an toàn, nhanh chóng và nhận ngay bộ trang phục hoàn hảo được giao đến tận nhà.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container my-5 py-5">
+    <div class="d-flex justify-content-between align-items-end mb-4">
+        <h3 class="section-title h4 m-0">Sản phẩm nổi bật</h3>
+        <a href="/Product" class="text-dark fw-bold small text-decoration-none border-bottom border-dark pb-1">Xem tất cả <i class="fa-solid fa-arrow-right ms-1"></i></a>
+    </div>
+
+    <div class="row g-4">
+        @if (Model != null && Model.Any())
+        {
+            foreach (var product in Model.Take(4))
+            {
+                <div class="col-6 col-md-3">
+                    <a href="/Product/Details/@product.Id" class="text-decoration-none text-dark product-card d-block">
+                        <div class="product-img-wrapper">
+                            <img src="@(!string.IsNullOrEmpty(product.ImageUrl) ? product.ImageUrl : "https://images.unsplash.com/photo-1556821840-3a63f95609a7?q=80&w=600&auto=format&fit=crop")"
+                                 class="product-img" alt="@product.Name"
+                                 onerror="this.src='/images/no-image.png';">
+                        </div>
+                        <div class="product-info mt-3">
+                            <p class="text-brand text-uppercase mb-1 fw-bold">OUTFIT SHOP</p>
+                            <h6 class="fw-bold mb-1 text-truncate" title="@product.Name">@product.Name</h6>
+                            <p class="mb-0 text-muted" style="font-size: 14px;">@product.Price.ToString("N0") ₫</p>
+                        </div>
+                    </a>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="col-12 text-center py-5">
+                <p class="text-muted">Đang cập nhật bộ sưu tập mới...</p>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Tôi vẫn giữ lại hàm này theo yêu cầu code cũ của bạn
+        function addToCart(productId) {
+            alert("Đã thêm sản phẩm có mã " + productId + " vào giỏ hàng thành công!");
+        }
+    </script>
+}

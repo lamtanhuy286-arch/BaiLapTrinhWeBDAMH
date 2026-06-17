@@ -1,0 +1,131 @@
+﻿@model IEnumerable<OutfitShop.Models.Product>
+@{
+    ViewData["Title"] = "Cửa Hàng OUTFIT";
+
+    // Bắt thông minh đường dẫn hiện tại để giữ nguyên chữ đang tìm kiếm (nếu có)
+    string currentPath = Context.Request.Path;
+    string currentQuery = Context.Request.Query["query"];
+    string queryParam = !string.IsNullOrEmpty(currentQuery) ? $"&query={currentQuery}" : "";
+}
+
+<div class="bg-light py-4 mb-5 border-bottom">
+    <div class="container d-flex flex-column flex-md-row justify-content-between align-items-center">
+        <h2 class="fw-bold text-uppercase m-0 mb-3 mb-md-0"><i class="fa-solid fa-store me-2"></i>Tất Cả Sản Phẩm</h2>
+        
+        <div class="dropdown">
+            <button class="btn btn-outline-dark dropdown-toggle fw-bold px-4" type="button" data-bs-toggle="dropdown" id="dropdownSortText">
+                Sắp xếp theo: Mới nhất
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end shadow border-0">
+                <li><a class="dropdown-item py-2" href="@currentPath?sortOrder=newest@(queryParam)">Mới nhất</a></li>
+                <li><a class="dropdown-item py-2" href="@currentPath?sortOrder=price_asc@(queryParam)">Giá: Thấp đến Cao</a></li>
+                <li><a class="dropdown-item py-2" href="@currentPath?sortOrder=price_desc@(queryParam)">Giá: Cao đến Thấp</a></li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<div class="container mb-5" style="min-height: 50vh;">
+    @if (Model == null || !Model.Any())
+    {
+        <div class="text-center py-5">
+            <i class="fa-solid fa-box-open fa-4x text-muted mb-3"></i>
+            <h4 class="text-muted fw-bold">Hiện tại chưa có sản phẩm nào!</h4>
+            <p class="text-muted">Vui lòng quay lại sau khi chúng tôi cập nhật thêm các mẫu mới.</p>
+        </div>
+    }
+    else
+    {
+        <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-4">
+            @foreach (var item in Model)
+            {
+                <div class="col">
+                    <div class="card h-100 border-0 shadow-sm transition-hover">
+                        <div class="position-relative overflow-hidden bg-light">
+                            <img src="@item.ImageUrl" class="card-img-top w-100" alt="@item.Name" style="height: 300px; object-fit: cover;" onerror="this.src='https://via.placeholder.com/300x400';">
+                        </div>
+                        
+                        <div class="card-body d-flex flex-column text-center p-3">
+                            <h6 class="card-title fw-bold text-truncate mb-1" title="@item.Name">@item.Name</h6>
+                            <p class="text-danger fw-bold fs-5 mb-3 mt-auto">@item.Price.ToString("N0") đ</p>
+                            
+                            <div class="d-flex gap-2">
+                                <a href="/Product/Details/@item.Id" class="btn btn-outline-dark w-50 fw-bold small py-2" title="Xem chi tiết">
+                                    <i class="fa-regular fa-eye"></i> Xem
+                                </a>
+                                <button class="btn btn-dark w-50 fw-bold small py-2" onclick="addToCart(@item.Id)" title="Thêm vào giỏ">
+                                    <i class="fa-solid fa-cart-plus"></i> Mua
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+        
+        <nav class="mt-5 pt-4 border-top">
+            <ul class="pagination justify-content-center m-0">
+                <li class="page-item disabled"><a class="page-link text-dark fw-bold border-0" href="#"><i class="fa-solid fa-chevron-left"></i></a></li>
+                <li class="page-item active"><a class="page-link bg-dark border-dark fw-bold" href="#">1</a></li>
+                <li class="page-item"><a class="page-link text-dark fw-bold border-0" href="#">2</a></li>
+                <li class="page-item"><a class="page-link text-dark fw-bold border-0" href="#">3</a></li>
+                <li class="page-item"><a class="page-link text-dark fw-bold border-0" href="#"><i class="fa-solid fa-chevron-right"></i></a></li>
+            </ul>
+        </nav>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        // 1. Cập nhật chữ trên nút Dropdown dựa vào thanh URL
+        document.addEventListener("DOMContentLoaded", function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const sort = urlParams.get('sortOrder');
+            const btn = document.getElementById('dropdownSortText');
+            
+            if (sort === 'price_asc') {
+                btn.innerHTML = 'Sắp xếp theo: Giá Thấp đến Cao';
+            } else if (sort === 'price_desc') {
+                btn.innerHTML = 'Sắp xếp theo: Giá Cao đến Thấp';
+            } else {
+                btn.innerHTML = 'Sắp xếp theo: Mới nhất';
+            }
+        });
+
+        // 2. Hàm thêm vào giỏ hàng (Đã có tính năng kiểm tra Đăng nhập)
+        function addToCart(productId) {
+            // Kiểm tra trạng thái đăng nhập trực tiếp từ hệ thống C#
+            let isLoggedIn = @((User.Identity?.IsAuthenticated == true).ToString().ToLower());
+
+            if (!isLoggedIn) {
+                // Nếu chưa đăng nhập -> Cảnh báo và chuyển hướng sang trang Login
+                if (confirm("Vui lòng đăng nhập để mua hàng! Bạn có muốn chuyển đến trang Đăng nhập không?")) {
+                    window.location.href = '/Account/Login';
+                }
+                return; // Lệnh này chặn lại, không cho gửi yêu cầu thêm giỏ hàng lên Server nữa
+            }
+
+            // Nếu ĐÃ ĐĂNG NHẬP, thì code mới chạy tiếp xuống đây
+            let formData = new URLSearchParams();
+            formData.append('id', productId);
+            formData.append('quantity', 1);
+
+            fetch('/Cart/AddToCart', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    if (confirm("Đã thêm sản phẩm vào giỏ hàng thành công! Bạn có muốn đi đến Giỏ hàng ngay không?")) {
+                        window.location.href = '/Cart/Index';
+                    }
+                } else {
+                    alert("Lỗi: " + data.message);
+                }
+            })
+            .catch(err => alert("Không thể kết nối đến máy chủ!"));
+        }
+    </script>
+}

@@ -1,0 +1,11 @@
+﻿@{
+    ViewData["Title"] = "Giao dịch bị hủy";
+}
+<div class="container text-center py-5">
+    <div class="py-5">
+        <i class="fa-solid fa-circle-xmark text-danger display-1 mb-4"></i>
+        <h2 class="fw-bold text-dark">GIAO DỊCH BỊ HỦY</h2>
+        <p class="text-muted w-50 mx-auto mt-2">@ViewBag.Message Tiền chưa được trừ khỏi tài khoản thẻ của bạn. Vui lòng kiểm tra lại thông tin hạn mức thẻ.</p>
+        <a href="/Cart/Index" class="btn btn-dark px-5 py-2 rounded-0 mt-4 text-uppercase fw-semibold" style="font-size: 13px;">Quay lại giỏ hàng</a>
+    </div>
+</div>

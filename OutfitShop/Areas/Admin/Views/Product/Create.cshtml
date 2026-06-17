@@ -1,0 +1,53 @@
+﻿@model OutfitShop.Models.Product
+@{
+    ViewData["Title"] = "Thêm sản phẩm";
+    Layout = "~/Areas/Admin/Views/Shared/_Layout.cshtml";
+}
+
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-primary text-white fw-bold">
+        <i class="fa-solid fa-shirt me-2"></i> Thêm Sản Phẩm Mới
+    </div>
+    <div class="card-body">
+        <div asp-validation-summary="All" class="text-danger mb-3 fw-bold"></div>
+
+        <form asp-action="Create" method="post" enctype="multipart/form-data">
+            
+            <div class="mb-3">
+                <label asp-for="Name" class="form-label fw-semibold">Tên sản phẩm</label>
+                <input asp-for="Name" class="form-control" required placeholder="Ví dụ: Áo khoác Varsity" />
+            </div>
+            
+            <div class="mb-3">
+                <label asp-for="CategoryId" class="form-label fw-semibold">Phân loại danh mục</label>
+                <select asp-for="CategoryId" class="form-select" asp-items="ViewBag.CategoryId" required>
+                    <option value="">-- Vui lòng chọn danh mục --</option>
+                </select>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label asp-for="Price" class="form-label fw-semibold">Giá bán (VNĐ)</label>
+                    <input asp-for="Price" type="number" class="form-control" required />
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label asp-for="StockQuantity" class="form-label fw-semibold">Số lượng tồn kho</label>
+                    <input asp-for="StockQuantity" type="number" class="form-control" required />
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Description" class="form-label fw-semibold">Mô tả sản phẩm</label>
+                <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label fw-semibold">Hình ảnh sản phẩm (Khuyến nghị tỷ lệ vuông 700x700px)</label>
+                <input type="file" name="ImageFile" class="form-control" accept="image/*" />
+            </div>
+
+            <button type="submit" class="btn btn-primary fw-semibold"><i class="fa-solid fa-save me-1"></i> Thêm sản phẩm</button>
+            <a href="/Admin/Product" class="btn btn-secondary fw-semibold"><i class="fa-solid fa-arrow-left me-1"></i> Quay lại</a>
+        </form>
+    </div>
+</div>

@@ -1,0 +1,143 @@
+@model List<OutfitShop.Models.CartItem>
+@{
+    ViewData["Title"] = SharedLocalizer["Checkout"];
+
+    // Tính tổng tiền thật từ giỏ hàng
+    decimal totalOrderAmount = Model?.Sum(x => x.TotalPrice) ?? 0;
+}
+
+<div class="container py-5" style="min-height: 60vh;">
+    <h2 class="fw-bold mb-4 text-uppercase" style="letter-spacing: -0.5px;">
+        <i class="fa-solid fa-cash-register me-2"></i>@SharedLocalizer["Checkout"]
+    </h2>
+
+    <form asp-controller="Cart" asp-action="ProcessCheckout" method="post" id="checkoutForm">
+        <div class="row g-4">
+            <div class="col-lg-7">
+                <div class="card border-0 p-4 bg-white border">
+                    <h5 class="fw-bold mb-3 border-bottom pb-2 text-uppercase" style="font-size: 14px; letter-spacing: 0.5px;">
+                        @SharedLocalizer["ShippingInformation"]
+                    </h5>
+
+                    <div class="mb-3">
+                        <label class="form-label small">@SharedLocalizer["FullName"] *</label>
+                        <input type="text" class="form-control rounded-0 shadow-none" name="ReceiverName" required placeholder="Nguyễn Văn A">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small">@SharedLocalizer["PhoneNumber"] *</label>
+                        <input type="tel" class="form-control rounded-0 shadow-none" name="Phone" required placeholder="090xxxxxxx">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small">@SharedLocalizer["ShippingAddress"] *</label>
+                        <input type="text" class="form-control rounded-0 shadow-none" name="Address" required placeholder="Số nhà, tên đường, Quận/Huyện...">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small">@SharedLocalizer["OrderNotes"]</label>
+                        <textarea class="form-control rounded-0 shadow-none" name="OrderNotes" rows="2"></textarea>
+                    </div>
+                </div>
+
+                <div class="card border-0 p-4 mt-4 bg-white border">
+                    <h5 class="fw-bold mb-3 border-bottom pb-2 text-uppercase" style="font-size: 14px; letter-spacing: 0.5px;">
+                        @SharedLocalizer["PaymentMethod"]
+                    </h5>
+
+                    <div class="form-check mb-3">
+                        <input class="form-check-input shadow-none" type="radio" name="PaymentMethod" id="cod" value="COD" checked>
+                        <label class="form-check-label fw-semibold text-dark" for="cod" style="font-size: 14px;">
+                            <i class="fa-solid fa-truck text-muted me-2"></i>@SharedLocalizer["CodPayment"]
+                        </label>
+                    </div>
+
+                    <div class="form-check mb-3">
+                        <input class="form-check-input shadow-none" type="radio" name="PaymentMethod" id="visa" value="VISA">
+                        <label class="form-check-label fw-semibold text-dark" for="visa" style="font-size: 14px;">
+                            <i class="fa-brands fa-cc-visa text-primary me-2"></i>@SharedLocalizer["VisaMasterPayment"]
+                        </label>
+                    </div>
+
+                    <div class="form-check mb-3">
+                        <input class="form-check-input shadow-none" type="radio" name="PaymentMethod" id="momo" value="Momo">
+                        <label class="form-check-label fw-semibold text-dark" for="momo" style="font-size: 14px;">
+                            <i class="fa-solid fa-wallet text-danger me-2"></i>@SharedLocalizer["MomoWallet"]
+                        </label>
+                    </div>
+
+                    <div class="form-check">
+                        <input class="form-check-input shadow-none" type="radio" name="PaymentMethod" id="paypal" value="PAYPAL">
+                        <label class="form-check-label fw-semibold text-dark" for="paypal" style="font-size: 14px;">
+                            <i class="fa-brands fa-paypal text-primary me-2"></i>PayPal
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-5">
+                <div class="card border-0 p-4 sticky-top bg-white border" style="top: 100px;">
+                    <h5 class="fw-bold mb-3 border-bottom pb-2 text-uppercase" style="font-size: 14px; letter-spacing: 0.5px;">
+                        @SharedLocalizer["YourOrder"]
+                    </h5>
+
+                    <div class="mb-3 border-bottom pb-2" style="max-height: 250px; overflow-y: auto;">
+                        @if (Model != null && Model.Any())
+                        {
+                            @foreach (var item in Model)
+                            {
+                                <div class="d-flex justify-content-between mb-3 small align-items-center">
+                                    <span class="text-truncate text-muted" style="max-width: 65%;">
+                                        <span class="fw-bold text-dark">@item.Quantity x</span> @item.ProductName
+                                    </span>
+                                    <span class="fw-medium text-dark">@item.TotalPrice.ToString("N0") đ</span>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div class="text-muted small italic py-2">@SharedLocalizer["CartEmptyTitle"]</div>
+                        }
+                    </div>
+
+                    <div class="d-flex justify-content-between mb-2 small">
+                        <span class="text-muted">@SharedLocalizer["Subtotal"]:</span>
+                        <span class="fw-semibold text-dark">@totalOrderAmount.ToString("N0") đ</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-3 pb-2 border-bottom small">
+                        <span class="text-muted">@SharedLocalizer["ShippingFee"]:</span>
+                        <span class="text-success fw-semibold">@SharedLocalizer["FreeShipping"]</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <span class="fw-bold text-dark text-uppercase" style="font-size: 14px;">@SharedLocalizer["TotalPayment"]:</span>
+                        <span class="h4 fw-bold text-danger m-0">@totalOrderAmount.ToString("N0") đ</span>
+                    </div>
+
+                    <button type="submit" id="btnPlaceOrder" class="btn btn-dark w-100 fw-bold py-3 rounded-0 text-uppercase" style="font-size: 13px; letter-spacing: 1px;">
+                        @SharedLocalizer["ConfirmOrder"]
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            // Xử lý chặn hành vi Submit form gốc nếu khách chọn thanh toán bằng VISA
+            $('#checkoutForm').on('submit', function (e) {
+                let selectedMethod = $('input[name="PaymentMethod"]:checked').val();
+
+                if (selectedMethod === 'VISA') {
+                    // Ngăn form gửi dữ liệu về Cart/ProcessCheckout
+                    e.preventDefault();
+
+                    // Thực hiện gửi Form ảo hướng thẳng sang PaymentController xử lý cổng Stripe thẻ Visa
+                    let stripeForm = document.createElement('form');
+                    stripeForm.method = 'POST';
+                    stripeForm.action = '/Payment/CreateCheckoutSession';
+                    document.body.appendChild(stripeForm);
+                    stripeForm.submit();
+                }
+            });
+        });
+    </script>
+}

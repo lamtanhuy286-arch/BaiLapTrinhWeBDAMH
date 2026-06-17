@@ -1,0 +1,56 @@
+﻿@model OutfitShop.Models.ApplicationUser
+@{
+    ViewData["Title"] = "Hồ sơ khách hàng";
+    Layout = "~/Areas/Admin/Views/Shared/_Layout.cshtml";
+}
+
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-secondary text-white fw-bold">
+        <i class="fa-solid fa-address-card me-2"></i> Hồ Sơ Khách Hàng
+    </div>
+    <div class="card-body">
+        <div class="row align-items-center">
+            <div class="col-md-3 text-center mb-3 mb-md-0">
+                <i class="fa-solid fa-circle-user text-muted" style="font-size: 120px;"></i>
+                <h5 class="fw-bold mt-3 text-primary">@(Model.FullName ?? "Chưa có tên")</h5>
+            </div>
+            <div class="col-md-9">
+                <table class="table table-bordered mb-0">
+                    <tr>
+                        <th style="width: 200px;" class="bg-light">Mã khách hàng (ID)</th>
+                        <td class="text-muted">@Model.Id</td>
+                    </tr>
+                    <tr>
+                        <th class="bg-light">Địa chỉ Email</th>
+                        <td>@Model.Email</td>
+                    </tr>
+                    <tr>
+                        <th class="bg-light">Số điện thoại</th>
+                        <td>@(Model.PhoneNumber ?? "Chưa cập nhật")</td>
+                    </tr>
+                    <tr>
+                        <th class="bg-light">Trạng thái tài khoản</th>
+                        <td>
+                            @if (Model.LockoutEnd != null && Model.LockoutEnd > DateTimeOffset.UtcNow)
+                            {
+                                <span class="badge bg-danger px-3 py-2"><i class="fa-solid fa-lock me-1"></i> Bị khóa</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-success px-3 py-2"><i class="fa-solid fa-check me-1"></i> Đang hoạt động</span>
+                            }
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        
+        <hr class="mt-4 mb-4" />
+        <div class="d-flex justify-content-between">
+            <a href="/Admin/Customer/ToggleStatus/@Model.Id" class="btn btn-outline-danger fw-semibold" onclick="return confirm('Xác nhận đổi trạng thái khóa/mở tài khoản này?');">
+                <i class="fa-solid fa-user-lock me-1"></i> Khóa/Mở tài khoản
+            </a>
+            <a href="/Admin/Customer" class="btn btn-secondary fw-semibold"><i class="fa-solid fa-arrow-left me-1"></i> Quay lại</a>
+        </div>
+    </div>
+</div>

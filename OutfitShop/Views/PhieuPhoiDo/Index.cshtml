@@ -1,0 +1,689 @@
+﻿@model IEnumerable<OutfitShop.Models.Product>
+@{
+    ViewData["Title"] = "Phòng Thử Đồ Thông Minh";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OUTFITSHOP - Phòng Thử Đồ AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #ffffff; color: #111111; overflow-x: hidden; }
+
+        .topbar { border-bottom: 1px solid #eaeaea; padding: 15px 40px; background: #ffffff; }
+        .topbar-link { color: #555; text-decoration: none; margin: 0 15px; font-weight: 500; font-size: 14px; transition: 0.2s; }
+        .topbar-link:hover, .topbar-link.active { color: #111111; border-bottom: 2px solid #111111; padding-bottom: 5px; }
+
+        .left-panel { border-right: 1px solid #eaeaea; height: calc(100vh - 65px); overflow-y: auto; padding: 0; }
+        .center-panel {
+            height: calc(100vh - 65px);
+            position: relative;
+            background-color: #fafafa;
+            background-image: radial-gradient(#e5e5e5 1px, transparent 1px);
+            background-size: 16px 16px;
+            display: flex; justify-content: center; align-items: center;
+        }
+        .right-panel { border-left: 1px solid #eaeaea; height: calc(100vh - 65px); padding: 30px; display: flex; flex-direction: column; }
+
+        .nav-tabs-custom { border-bottom: 1px solid #eaeaea; padding: 10px 20px 0; display: flex; gap: 5px; list-style: none; margin: 0; }
+        .nav-tabs-custom .tab-link { border: none; background: none; color: #666; font-size: 13px; font-weight: 500; padding: 8px 16px; cursor: pointer; }
+        .nav-tabs-custom .tab-link.active { background-color: #f1f1f1; color: #111111; border-radius: 4px; font-weight: 600; }
+
+        .product-grid { padding: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .item-card { cursor: pointer; transition: all 0.2s ease; border: 1px solid #eee; padding: 8px; border-radius: 4px; background: #fff; position: relative; }
+        .item-card img { width: 100%; aspect-ratio: 1; object-fit: cover; background: #f9f9f9; border-radius: 2px; }
+        .item-card:hover { border-color: #111; }
+        .item-card.selected { border-color: #000; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+        .item-card.selected::after {
+            content: '✓';
+            position: absolute; top: 6px; right: 6px;
+            background: #111; color: #fff;
+            width: 18px; height: 18px; border-radius: 50%;
+            font-size: 10px; font-weight: 700;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .item-card.disabled-card { opacity: 0.4; cursor: not-allowed; pointer-events: none; }
+        .item-name { font-size: 12px; font-weight: 600; margin-top: 8px; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .item-price { font-size: 12px; color: #ff3b30; font-weight: 500; }
+
+        .canvas-container { width: 380px; height: 480px; position: relative; background: #ffffff; border: 1px solid #eaeaea; box-shadow: 0 10px 40px rgba(0,0,0,0.03); overflow: hidden; }
+        .canvas-image { width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; }
+        .upload-btn-overlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10; text-align: center; width: 80%; }
+
+        .toolbar { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); background: #ffffff; border: 1px solid #eaeaea; border-radius: 30px; padding: 4px 14px; display: flex; gap: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .toolbar i { cursor: pointer; color: #666; padding: 6px; transition: 0.2s; }
+        .toolbar i:hover { color: #000; }
+
+        #ai-loader {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255,255,255,0.95); z-index: 20;
+            flex-direction: column; justify-content: center; align-items: center;
+            display: none;
+        }
+        .spinner { width: 36px; height: 36px; border: 3px solid #f3f3f3; border-top-color: #111111; border-radius: 50%; animation: spin 1s linear infinite; }
+        @@keyframes spin { to { transform: rotate(360deg); } }
+
+        .progress-wrap { width: 200px; margin-top: 12px; }
+        .progress-bar-ai { height: 3px; background: #111; border-radius: 2px; width: 0%; transition: width 0.4s ease; }
+        .progress-bg { height: 3px; background: #eee; border-radius: 2px; }
+
+        /* Danh sách bước thử đồ */
+        .step-item {
+            display: flex; gap: 10px; margin-bottom: 10px; padding: 10px;
+            background: #fcfcfc; border: 1px solid #f0f0f0; border-radius: 6px;
+            align-items: center; position: relative;
+        }
+        .step-item.active-step { border-color: #111; background: #f8f8f8; }
+        .step-item.undone { opacity: 0.5; }
+        .step-num {
+            width: 22px; height: 22px; border-radius: 50%; background: #eee;
+            font-size: 10px; font-weight: 700; color: #555;
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+        }
+        .step-num.done { background: #111; color: #fff; }
+        .step-num.current { background: #2563eb; color: #fff; }
+        .step-img { width: 42px; height: 42px; object-fit: cover; border-radius: 3px; flex-shrink: 0; }
+        .step-name { font-size: 12px; font-weight: 600; margin: 0; }
+        .step-status { font-size: 10px; color: #999; margin: 2px 0 0; }
+
+        .btn-step-action {
+            border: none; background: none; cursor: pointer; padding: 3px 6px;
+            border-radius: 3px; font-size: 11px; font-weight: 600;
+        }
+        .btn-undo { color: #888; border: 1px solid #ddd; }
+        .btn-undo:hover { color: #111; border-color: #111; }
+        .btn-remove-step { color: #bbb; font-size: 13px; }
+        .btn-remove-step:hover { color: #e00; }
+
+        .btn-checkout { background: #111111; color: #ffffff; padding: 13px; border: none; font-weight: 600; font-size: 13px; width: 100%; border-radius: 4px; transition: 0.2s; }
+        .btn-checkout:hover { background: #333333; }
+        .btn-checkout:disabled { background: #bbb; cursor: not-allowed; }
+
+        /* Nút thử đồ nhỏ gọn */
+        .btn-try-item {
+            border: 1px solid #111; background: #fff; color: #111;
+            font-size: 11px; font-weight: 600; padding: 4px 10px;
+            border-radius: 3px; cursor: pointer; white-space: nowrap;
+            transition: 0.15s; flex-shrink: 0;
+        }
+        .btn-try-item:hover { background: #111; color: #fff; }
+        .btn-try-item:disabled { border-color: #ccc; color: #ccc; cursor: not-allowed; }
+
+        #toast {
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+            background: #111; color: #fff; padding: 10px 24px; border-radius: 30px;
+            font-size: 13px; font-weight: 500; z-index: 9999;
+            opacity: 0; transition: opacity 0.3s ease; pointer-events: none;
+        }
+        #toast.show { opacity: 1; }
+
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-thumb { background: #ddd; border-radius: 5px; }
+    </style>
+</head>
+<body>
+
+<div id="toast"></div>
+
+<div class="topbar d-flex justify-content-between align-items-center">
+    <a href="/" class="text-dark text-decoration-none fs-4 fw-bold" style="letter-spacing:-1.5px;">
+        OUTFIT<span class="text-muted fw-normal">SHOP</span>
+    </a>
+    <div>
+        <a href="/" class="topbar-link">Trang chủ</a>
+        <a href="/Product" class="topbar-link">Catalog sản phẩm</a>
+        <a href="#" class="topbar-link active">Phòng phối đồ AI</a>
+    </div>
+    <div class="d-flex gap-4 fs-5 text-dark">
+        <a href="/Cart" class="text-dark"><i class="fa-solid fa-bag-shopping"></i></a>
+        <a href="/Account/Login" class="text-dark"><i class="fa-regular fa-user"></i></a>
+    </div>
+</div>
+
+<div class="container-fluid p-0">
+    <div class="row g-0">
+
+        <!-- ===== CỘT TRÁI ===== -->
+        <div class="col-md-3 left-panel">
+            <div class="nav-tabs-custom">
+                <button class="tab-link active" onclick="filterCategory('ao')">Áo</button>
+                <button class="tab-link" onclick="filterCategory('quan')">Quần</button>
+                <button class="tab-link" onclick="filterCategory('giay')">Giày</button>
+                <button class="tab-link" onclick="filterCategory('all')">Tất cả</button>
+            </div>
+
+            <div class="product-grid">
+                @if (Model != null)
+                {
+                    foreach (var item in Model)
+                    {
+                        string itemGroup = "other";
+                        string clothType = "upper";
+
+                        if (item.Name.Contains("Áo") || (item.Category != null && item.Category.Name.Contains("Áo")))
+                        { itemGroup = "ao"; clothType = "upper"; }
+                        else if (item.Name.Contains("Quần") || (item.Category != null && item.Category.Name.Contains("Quần")))
+                        { itemGroup = "quan"; clothType = "lower"; }
+                        else if (item.Name.Contains("Giày") || (item.Category != null && item.Category.Name.Contains("Giày")))
+                        { itemGroup = "giay"; clothType = "lower"; }
+
+                        int priceJs = Convert.ToInt32(item.Price);
+                        string imageJs = !string.IsNullOrEmpty(item.ImageUrl) ? item.ImageUrl : "/images/no-image.png";
+
+                        <div class="item-card product-item"
+                             data-group="@itemGroup"
+                             data-id="@item.Id"
+                             data-clothtype="@clothType"
+                             onclick="selectItem('@item.Id', '@item.Name', @priceJs, '@imageJs', '@clothType', this)">
+                            <img src="@imageJs" alt="@item.Name" loading="lazy">
+                            <p class="item-name">@item.Name</p>
+                            <p class="item-price">@item.Price.ToString("N0") ₫</p>
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+
+        <!-- ===== CỘT GIỮA ===== -->
+        <div class="col-md-6 center-panel">
+            <div class="canvas-container">
+                <img id="user-photo" class="canvas-image" src="" style="display:none;" alt="Model">
+                <img id="ai-result-layer" class="canvas-image" src="" style="display:none;" alt="AI Result">
+
+                <div class="upload-btn-overlay" id="upload-ui">
+                    <i class="fa-solid fa-person fs-1 mb-3" style="color:#ccc;"></i>
+                    <h6 class="fw-bold">Tải lên hình ảnh của bạn</h6>
+                    <p class="text-muted small mb-3" style="font-size:11px;">
+                        Đứng thẳng, nhìn thẳng, nền đơn giản<br>để AI nhận diện chính xác nhất.
+                    </p>
+                    <label for="imageUpload" class="btn btn-dark btn-sm px-4 shadow-sm" style="border-radius:2px; font-size:12px;">
+                        <i class="fa-solid fa-upload me-1"></i> Chọn hình ảnh
+                    </label>
+                    <input type="file" id="imageUpload" accept="image/*" style="display:none;" onchange="loadUserImage(event)">
+                </div>
+
+                <div id="ai-loader">
+                    <div class="spinner mb-3"></div>
+                    <h6 class="fw-bold mb-1" id="ai-status">Đang kết nối Server AI...</h6>
+                    <p class="text-muted text-center px-4 mb-2" style="font-size:11px;">
+                        Hệ thống đang gửi dữ liệu lên FitRoom AI.<br>Vui lòng không đóng trang web.
+                    </p>
+                    <div class="progress-wrap">
+                        <div class="progress-bg">
+                            <div class="progress-bar-ai" id="progress-bar"></div>
+                        </div>
+                    </div>
+                    <p class="text-muted mt-2" style="font-size:10px;" id="progress-text">Đang xử lý...</p>
+                </div>
+            </div>
+
+            <div class="toolbar">
+                <i class="fa-solid fa-plus" title="Phóng to" onclick="zoomCanvas(1.1)"></i>
+                <i class="fa-solid fa-minus" title="Thu nhỏ" onclick="zoomCanvas(0.9)"></i>
+                <i class="fa-solid fa-arrow-rotate-left" title="Đặt lại" onclick="resetModel()"></i>
+            </div>
+        </div>
+
+        <!-- ===== CỘT PHẢI ===== -->
+        <div class="col-md-3 right-panel">
+            <h5 class="fw-bold mb-1" style="letter-spacing:-0.5px;">Phối đồ từng bước</h5>
+            <p class="text-muted small mb-3">
+                Đã thử: <span id="item-count" class="fw-bold text-dark">0</span> món •
+                <span id="history-count" class="text-muted">0 bước lịch sử</span>
+            </p>
+
+            <!-- Hướng dẫn -->
+            <p style="font-size:11px; background:#f8f8f8; padding:8px 10px; border-radius:4px; border-left:3px solid #ddd; margin-bottom:12px; color:#555;">
+                <i class="fa-solid fa-circle-info me-1"></i>
+                Chọn từng món → nhấn <strong>Thử ngay</strong> → xem kết quả.<br>
+                Dùng <strong>↩ Hoàn tác</strong> nếu không hợp.
+            </p>
+
+            <!-- Danh sách bước -->
+            <div id="step-list" class="flex-grow-1" style="overflow-y:auto;">
+                <p class="text-muted small fst-italic" id="empty-msg">
+                    Tải ảnh lên rồi chọn trang phục để bắt đầu phối đồ.
+                </p>
+            </div>
+
+            <!-- Tổng & nút -->
+            <div class="border-top pt-3 mt-2">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="fw-medium text-muted small">Tổng dự toán:</span>
+                    <h5 class="fw-bold m-0 text-dark" id="total-price">0 ₫</h5>
+                </div>
+                <!-- Nút hoàn tác nhanh -->
+                <button class="btn-checkout mb-2" id="btn-undo-last"
+                        onclick="undoLastStep()"
+                        disabled
+                        style="background:#555; font-size:12px; padding:10px;">
+                    <i class="fa-solid fa-rotate-left me-1"></i>Hoàn tác bước vừa rồi
+                </button>
+                <button class="btn-checkout" id="btn-add-cart" onclick="addToCart()" disabled>
+                    <i class="fa-solid fa-cart-arrow-down me-2"></i>Thêm vào giỏ hàng
+                </button>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    // ══════════════════════════════════════════════════
+    // STATE CHÍNH
+    // ══════════════════════════════════════════════════
+    let isUserImageUploaded = false;
+    let canvasScale = 1;
+
+    // Mỗi "bước" = 1 lần thử đồ thành công
+    // { stepId, itemId, name, price, image, clothType, resultImage, beforeImage }
+    let steps = [];          // Lịch sử các bước đã thử (resultImage lưu ảnh sau khi thử)
+    let pendingItem = null;  // Món đang được chọn nhưng chưa thử
+    let isProcessing = false;
+
+    // ══════════════════════════════════════════════════
+    // KHỞI ĐỘNG
+    // ══════════════════════════════════════════════════
+    document.addEventListener("DOMContentLoaded", () => filterCategory('ao'));
+
+    // ── Lọc danh mục ─────────────────────────────────
+    function filterCategory(groupName) {
+        document.querySelectorAll('.tab-link').forEach(btn => {
+            btn.classList.remove('active');
+            const txt = btn.innerText.toLowerCase();
+            if ((groupName === 'ao'   && txt === 'áo')   ||
+                (groupName === 'quan' && txt === 'quần') ||
+                (groupName === 'giay' && txt === 'giày') ||
+                (groupName === 'all'  && txt === 'tất cả'))
+                btn.classList.add('active');
+        });
+        document.querySelectorAll('.product-item').forEach(el => {
+            const g = el.getAttribute('data-group');
+            el.style.display = (groupName === 'all' || g === groupName) ? 'block' : 'none';
+        });
+    }
+
+    // ── Load ảnh người dùng ───────────────────────────
+    function loadUserImage(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function () {
+            document.getElementById('user-photo').src = reader.result;
+            document.getElementById('user-photo').style.display = 'block';
+            document.getElementById('upload-ui').style.display = 'none';
+            isUserImageUploaded = true;
+            showToast('Đã tải ảnh! Chọn trang phục và nhấn Thử ngay.');
+            updateAllButtons();
+        };
+        reader.readAsDataURL(file);
+    }
+
+    // ══════════════════════════════════════════════════
+    // CHỌN MÓN ĐỒ (chỉ đánh dấu, CHƯA gọi AI)
+    // ══════════════════════════════════════════════════
+    function selectItem(id, name, price, imageUrl, clothType, cardEl) {
+        if (isProcessing) { showToast('AI đang xử lý, vui lòng chờ!', true); return; }
+
+        // Nếu đang chọn lại chính món đó → bỏ chọn
+        if (pendingItem && pendingItem.id === id) {
+            pendingItem = null;
+            cardEl.classList.remove('selected');
+            document.getElementById('btn-try-now') && (document.getElementById('btn-try-now').style.display = 'none');
+            renderStepList();
+            updateAllButtons();
+            return;
+        }
+
+        // Bỏ highlight card cũ
+        document.querySelectorAll('.product-item').forEach(c => c.classList.remove('selected'));
+        cardEl.classList.add('selected');
+
+        pendingItem = { id, name, price: parseInt(price), image: imageUrl, clothType };
+        renderStepList();
+        updateAllButtons();
+        showToast(`Đã chọn "${name}" — nhấn Thử ngay để AI xử lý.`);
+    }
+
+    // ══════════════════════════════════════════════════
+    // GỌI AI — THỬ MÓN ĐỒ ĐANG CHỌN
+    // ══════════════════════════════════════════════════
+    async function tryNow() {
+        if (!pendingItem) { showToast('Hãy chọn 1 sản phẩm trước!', true); return; }
+        if (!isUserImageUploaded) { showToast('Vui lòng tải ảnh của bạn lên trước!', true); return; }
+        if (isProcessing) return;
+
+        isProcessing = true;
+        updateAllButtons();
+
+        const item = pendingItem;
+        const fileInput = document.getElementById('imageUpload');
+        const loader   = document.getElementById('ai-loader');
+        const bar      = document.getElementById('progress-bar');
+        const progTxt  = document.getElementById('progress-text');
+        const statusEl = document.getElementById('ai-status');
+
+        loader.style.display = 'flex';
+        statusEl.innerText   = `Đang thử: ${item.name}...`;
+        bar.style.width      = '10%';
+        progTxt.innerText    = 'Bước 1/3: Upload ảnh...';
+
+        const formData = new FormData();
+
+        // Nếu đã có bước trước → dùng ảnh kết quả bước cuối làm "model"
+        // để giữ lại món đã mặc trước đó
+        if (steps.length > 0) {
+            try {
+                const lastResult = steps[steps.length - 1].resultImage;
+                const res  = await fetch(lastResult);
+                const blob = await res.blob();
+                formData.append('userImage', blob, 'model.jpg');
+            } catch {
+                formData.append('userImage', fileInput.files[0]);
+            }
+        } else {
+            formData.append('userImage', fileInput.files[0]);
+        }
+
+        formData.append('garmentImageUrl', item.image);
+        formData.append('clothType',       item.clothType);
+
+        try {
+            bar.style.width   = '30%';
+            progTxt.innerText = 'Bước 2/3: AI phân tích hình dáng...';
+            statusEl.innerText = 'AI đang xử lý (20–45 giây)...';
+
+            const response = await fetch('/PhieuPhoiDo/ProcessAITryOn', {
+                method: 'POST', body: formData
+            });
+
+            bar.style.width   = '80%';
+            progTxt.innerText = 'Bước 3/3: Ghép trang phục...';
+
+            const data = await response.json();
+            bar.style.width   = '100%';
+            progTxt.innerText = 'Hoàn tất!';
+
+            if (data.success && !data.isFallback) {
+                // ── LƯU BƯỚC VÀO LỊCH SỬ ───────────────────────
+                const beforeImage = steps.length > 0
+                    ? steps[steps.length - 1].resultImage
+                    : null; // null = dùng ảnh gốc khi undo
+
+                steps.push({
+                    stepId:      Date.now(),
+                    itemId:      item.id,
+                    name:        item.name,
+                    price:       item.price,
+                    image:       item.image,
+                    clothType:   item.clothType,
+                    resultImage: data.resultImage,
+                    beforeImage: beforeImage
+                });
+
+                // Hiển thị ảnh kết quả lên canvas
+                const resultLayer = document.getElementById('ai-result-layer');
+                resultLayer.src = data.resultImage;
+                Object.assign(resultLayer.style, {
+                    mixBlendMode: 'normal', position: 'absolute',
+                    top: '0', left: '0', width: '100%', height: '100%',
+                    transform: 'none', cursor: 'default', zIndex: '5'
+                });
+                resultLayer.style.display = 'block';
+
+                // Bỏ món vừa thử khỏi "đang chờ"
+                pendingItem = null;
+                document.querySelectorAll('.product-item').forEach(c => c.classList.remove('selected'));
+
+                showToast(`✓ Đã thử "${item.name}" — chọn món tiếp theo!`);
+
+            } else if (data.isFallback) {
+                showToast('AI đang bận, thử lại sau vài giây!', true);
+            } else {
+                showToast('Lỗi: ' + data.message, true);
+            }
+
+        } catch (err) {
+            showToast('Mất kết nối với máy chủ!', true);
+            console.error(err);
+        } finally {
+            isProcessing = false;
+            setTimeout(() => { loader.style.display = 'none'; }, 500);
+            renderStepList();
+            updateAllButtons();
+        }
+    }
+
+    // ══════════════════════════════════════════════════
+    // HOÀN TÁC — Quay lại bước trước
+    // ══════════════════════════════════════════════════
+    function undoLastStep() {
+        if (steps.length === 0) return;
+
+        const removed = steps.pop();
+        const resultLayer = document.getElementById('ai-result-layer');
+
+        if (steps.length === 0) {
+            // Quay về ảnh gốc người dùng
+            resultLayer.style.display = 'none';
+            document.getElementById('user-photo').style.display = 'block';
+        } else {
+            // Quay về kết quả của bước trước đó
+            resultLayer.src = steps[steps.length - 1].resultImage;
+        }
+
+        showToast(`↩ Đã bỏ "${removed.name}"`);
+        pendingItem = null;
+        document.querySelectorAll('.product-item').forEach(c => c.classList.remove('selected'));
+        renderStepList();
+        updateAllButtons();
+    }
+
+    // Hoàn tác đến 1 bước cụ thể (bấm nút ↩ trên từng dòng)
+    function undoToStep(targetStepId) {
+        const idx = steps.findIndex(s => s.stepId === targetStepId);
+        if (idx < 0) return;
+
+        // Xóa tất cả bước từ idx trở đi
+        const removed = steps.splice(idx);
+        const resultLayer = document.getElementById('ai-result-layer');
+
+        if (steps.length === 0) {
+            resultLayer.style.display = 'none';
+        } else {
+            resultLayer.src = steps[steps.length - 1].resultImage;
+            resultLayer.style.display = 'block';
+        }
+
+        showToast(`↩ Đã hoàn tác ${removed.length} bước`);
+        pendingItem = null;
+        document.querySelectorAll('.product-item').forEach(c => c.classList.remove('selected'));
+        renderStepList();
+        updateAllButtons();
+    }
+
+    // ══════════════════════════════════════════════════
+    // RENDER DANH SÁCH BƯỚC bên cột phải
+    // ══════════════════════════════════════════════════
+    function renderStepList() {
+        const container = document.getElementById('step-list');
+        const total = steps.reduce((s, st) => s + st.price, 0)
+                    + (pendingItem ? pendingItem.price : 0);
+
+        document.getElementById('item-count').innerText    = steps.length;
+        document.getElementById('history-count').innerText = steps.length + ' bước lịch sử';
+        document.getElementById('total-price').innerText   =
+            (steps.reduce((s, st) => s + st.price, 0)).toLocaleString('vi-VN') + ' ₫';
+
+        if (steps.length === 0 && !pendingItem) {
+            container.innerHTML =
+                '<p class="text-muted small fst-italic" id="empty-msg">Tải ảnh lên rồi chọn trang phục để bắt đầu phối đồ.</p>';
+            return;
+        }
+
+        let html = '';
+
+        // Các bước đã thử xong
+        steps.forEach((st, idx) => {
+            const isLast = idx === steps.length - 1;
+            html += `
+            <div class="step-item ${isLast ? 'active-step' : ''}">
+                <div class="step-num done">${idx + 1}</div>
+                <img class="step-img" src="${st.image}" alt="">
+                <div class="flex-grow-1" style="min-width:0;">
+                    <p class="step-name">${st.name}</p>
+                    <p class="step-status text-success">
+                        <i class="fa-solid fa-circle-check" style="font-size:9px;"></i>
+                        Đã thử AI · ${st.price.toLocaleString('vi-VN')} ₫
+                    </p>
+                </div>
+                <button class="btn-step-action btn-undo"
+                        onclick="undoToStep(${st.stepId})"
+                        title="Hoàn tác về trước bước này">
+                    ↩
+                </button>
+            </div>`;
+        });
+
+        // Món đang chờ thử (pendingItem)
+        if (pendingItem) {
+            html += `
+            <div class="step-item" style="border:1px dashed #aaa; background:#fff;">
+                <div class="step-num current">${steps.length + 1}</div>
+                <img class="step-img" src="${pendingItem.image}" alt="">
+                <div class="flex-grow-1" style="min-width:0;">
+                    <p class="step-name">${pendingItem.name}</p>
+                    <p class="step-status" style="color:#2563eb;">
+                        <i class="fa-solid fa-hand-pointer" style="font-size:9px;"></i>
+                        Đang chờ thử · ${pendingItem.price.toLocaleString('vi-VN')} ₫
+                    </p>
+                </div>
+                <button class="btn-try-item" id="btn-try-now"
+                        onclick="tryNow()"
+                        ${!isUserImageUploaded || isProcessing ? 'disabled' : ''}>
+                    <i class="fa-solid fa-wand-magic-sparkles me-1"></i>Thử ngay
+                </button>
+            </div>`;
+        }
+
+        container.innerHTML = html;
+    }
+
+    // ══════════════════════════════════════════════════
+    // CẬP NHẬT NÚT BẤM
+    // ══════════════════════════════════════════════════
+    function updateAllButtons() {
+        const hasDone    = steps.length > 0;
+        const hasPending = !!pendingItem;
+
+        // Nút hoàn tác nhanh
+        const btnUndo = document.getElementById('btn-undo-last');
+        btnUndo.disabled = !hasDone || isProcessing;
+
+        // Nút thêm giỏ hàng
+        const btnCart = document.getElementById('btn-add-cart');
+        btnCart.disabled = !hasDone || isProcessing;
+
+        // Nút "Thử ngay" bên trong step-item — đã render trong renderStepList
+    }
+
+    // ── Zoom canvas ───────────────────────────────────
+    function zoomCanvas(factor) {
+        const canvas = document.querySelector('.canvas-container');
+        canvasScale  = Math.min(Math.max(0.5, canvasScale * factor), 2);
+        canvas.style.transform       = `scale(${canvasScale})`;
+        canvas.style.transformOrigin = 'center center';
+    }
+
+    // ── Đặt lại toàn bộ ──────────────────────────────
+    function resetModel() {
+        document.getElementById('user-photo').src                = '';
+        document.getElementById('user-photo').style.display      = 'none';
+        document.getElementById('ai-result-layer').style.display = 'none';
+        document.getElementById('upload-ui').style.display       = 'block';
+        document.getElementById('imageUpload').value             = '';
+
+        const canvas = document.querySelector('.canvas-container');
+        canvas.style.transform = 'scale(1)';
+        canvasScale = 1;
+
+        document.querySelectorAll('.item-card').forEach(c => c.classList.remove('selected'));
+        isUserImageUploaded = false;
+        steps       = [];
+        pendingItem = null;
+        isProcessing = false;
+
+        renderStepList();
+        updateAllButtons();
+    }
+
+    // ── Thêm vào giỏ hàng (tất cả món đã thử xong) ──
+    async function addToCart() {
+        if (steps.length === 0) { showToast('Chưa có món đồ nào được thử!', true); return; }
+
+        const btn = document.getElementById('btn-add-cart');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i>Đang thêm...';
+
+        let successCount = 0;
+        for (const st of steps) {
+            const body = new URLSearchParams();
+            body.append('id', st.itemId);
+            body.append('quantity', 1);
+            try {
+                const res  = await fetch('/Cart/AddToCart', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: body
+                });
+                const data = await res.json();
+                if (data.success) successCount++;
+            } catch { /* bỏ qua lỗi từng item */ }
+        }
+
+        if (successCount > 0) {
+            showToast(`Đã thêm ${successCount} sản phẩm! Đang chuyển tới Giỏ hàng...`);
+            setTimeout(() => { window.location.href = '/Cart/Index'; }, 1000);
+        } else {
+            showToast('Không thể kết nối giỏ hàng!', true);
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-cart-arrow-down me-2"></i>Thêm vào giỏ hàng';
+        }
+    }
+
+    // ── Kéo thả (fallback) ───────────────────────────
+    function enableDragAndDrop(el) {
+        let isDragging = false, xOffset = 0, yOffset = 0, startX = 0, startY = 0, scale = 1;
+        el.onmousedown   = e => { startX = e.clientX - xOffset; startY = e.clientY - yOffset; isDragging = true; };
+        document.onmouseup   = () => { isDragging = false; };
+        document.onmousemove = e => {
+            if (!isDragging) return;
+            e.preventDefault();
+            xOffset = e.clientX - startX; yOffset = e.clientY - startY;
+            el.style.transform = `translate(calc(-50% + ${xOffset}px), calc(-50% + ${yOffset}px)) scale(${scale})`;
+        };
+        el.onwheel = e => {
+            e.preventDefault();
+            scale = Math.min(Math.max(0.5, scale - e.deltaY * 0.001), 3);
+            el.style.transform = `translate(calc(-50% + ${xOffset}px), calc(-50% + ${yOffset}px)) scale(${scale})`;
+        };
+    }
+
+    // ── Toast ────────────────────────────────────────
+    function showToast(msg, isError = false) {
+        const toast = document.getElementById('toast');
+        toast.innerText = msg;
+        toast.style.background = isError ? '#c0392b' : '#111';
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+</script>
+</body>
+</html>
